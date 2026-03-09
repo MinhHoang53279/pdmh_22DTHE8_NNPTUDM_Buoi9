@@ -4,6 +4,7 @@ let userController = require('../controllers/users')
 let bcrypt = require('bcrypt')
 let jwt = require('jsonwebtoken')
 let { checkLogin } = require('../utils/authHandler')
+let crypto = require('crypto')
 
 
 router.post('/register', async function (req, res, next) {
@@ -52,6 +53,43 @@ router.post('/logout', checkLogin, function (req, res, next) {
     httpOnly: true
   })
   res.send("logout")
+})
+router.post('/changepassword', checkLogin, async function (req, res, next) {
+  let { oldPassword, newPassword } = req.body;
+  let user = await userController.FindByID(req.userId);
+  if (bcrypt.compareSync(oldPassword, user.password)) {
+    user.password = newPassword;
+  }
+  await user.save();
+  res.send("da cap nhat password")
+})
+router.post('/forgotpassword', async function (req, res, next) {
+  let email = req.body.email;
+  let user = await userController.FindByEmail(email);
+  if (user) {
+    user.forgotPasswordToken = crypto.randomBytes(31).toString('hex');
+    user.forgotPasswordTokenExp = new Date(Date.now() + 10 * 60 * 1000);
+    console.log(user.forgotPasswordToken);
+    await user.save();
+    res.send("gui mail reset pass")
+    return;
+  }
+  res.send("email khong ton tai")
+})
+router.post('/resetpassword/:token', async function (req, res, next) {
+  let token = req.params.token;
+  let newPassword = req.body.password;
+  let getUser =  await userController.FindByToken(token);
+  console.log(getUser);
+  if (getUser) {
+    getUser.password = newPassword;
+    getUser.forgotPasswordToken = '';
+    getUser.forgotPasswordTokenExp = null;
+    await getUser.save()
+    res.send(" da cap nhat")
+  } else {
+    res.send("loi token")
+  }
 })
 
 

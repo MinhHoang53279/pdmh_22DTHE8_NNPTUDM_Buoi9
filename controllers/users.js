@@ -21,9 +21,9 @@ module.exports = {
         return await userModel
             .findOne({
                 _id: id,
-                isDeleted: false 
+                isDeleted: false
             }).populate({
-                path:'role', select:'name'
+                path: 'role', select: 'name'
             });
     },
     FindByUsername: async function (username) {
@@ -33,6 +33,25 @@ module.exports = {
                 isDeleted: false
             }
         )
+    }, FindByEmail: async function (email) {
+        return await userModel.findOne(
+            {
+                email: email,
+                isDeleted: false
+            }
+        )
+    },
+    FindByToken: async function (token) {
+        let user = await userModel.findOne(
+            {
+                forgotPasswordToken: token,
+                isDeleted: false
+            }
+        )
+        if (user && user.forgotPasswordTokenExp > Date.now()) {
+            return user;
+        }
+        return undefined
     },
     getAllUser: async function () {
         let users = await userModel
