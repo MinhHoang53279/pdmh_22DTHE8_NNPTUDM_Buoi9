@@ -33,6 +33,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/carts', require('./routes/carts'));
 app.use('/products', require('./routes/products'));
 app.use('/upload', require('./routes/upload'));
+app.use('/messages', require('./routes/messages'));
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
